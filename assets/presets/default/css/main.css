@@ -11960,6 +11960,21 @@ blockquote::before {
     object-fit: contain;
 }
 
+.membership-card{
+    padding: 18px;
+}
+
+.membership-card-active{
+    border: 1px solid #3da557;
+    border-radius :16px;
+  
+}
+
+.list-unstyled li{
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
 .myProfile-section .sign-up_box {
     display: flex;
     flex-direction: column;

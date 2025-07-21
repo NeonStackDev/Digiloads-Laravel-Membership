@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Order;
 use App\Models\Deposit;
 use App\Models\Product;
+use App\Models\MembershipPlan;
+use App\Models\UserMembership;
 use App\Lib\FormProcessor;
 use App\Models\Transaction;
 use Illuminate\Support\Str;
@@ -37,6 +39,15 @@ class PaymentController extends Controller
 
             $notify[] = ['success', 'Order place has been successfully'];
             return to_route('home')->withNotify($notify);
+        } else {
+            $membership = $user->activeMembership();
+            if($membership) {
+                $membershipplan = MembershipPlan::find($membership->plan_id);            
+                if ($membership->status == 'active' && $membership->downloads_today < $membershipplan->daily_download_limit) {
+                $product->price = 0;
+            }
+            }
+            
         }
 
         $gatewayCurrency = GatewayCurrency::whereHas('method', function ($gate) {
@@ -81,7 +92,7 @@ class PaymentController extends Controller
             'currency' => 'required',
         ]);
 
-    
+
         // order table data insert
         $order = new Order();
         $order->user_id = $user->id;
@@ -470,8 +481,72 @@ class PaymentController extends Controller
             'trx' => $user->trx,
             'post_balance' => showAmount($user->balance)
         ]);
-
     }
 
+    // Membership Payment
+    public function membershipPayment(Request $request)
+    {
 
+        $id = $request->input('plan_id');
+        $product = MembershipPlan::findOrFail($id);
+        $user = auth()->user();
+        if (isset($product->discount)) {
+            $amount = $product->price - ($product->price * $product->discount / 100);
+        } else {
+            $amount = $product->price;
+        }
+
+        if ($user->balance < $amount) {
+            $notify[] = ['error', 'Insufficient Balance'];
+            return to_route('user.deposit')->withNotify($notify);
+           
+        }
+        $user->balance -= $product->price;
+        $user->save();
+
+        $trx = getTrx();
+        $transaction = new Transaction();
+        $transaction->user_id = $user->id;
+        $transaction->amount = $product->price;
+        $transaction->post_balance = $user->balance;
+        $transaction->charge = 0;
+        $transaction->trx_type = '-';
+        $transaction->details = 'Membership Place';
+        $transaction->trx = $trx;
+        $transaction->remark = 'Membership Place';
+        $transaction->save();
+
+        // Assume payment was successful through Digiloads' payment system
+
+        $membership = new UserMembership();
+        $membership->user_id = auth()->id();
+        $membership->plan_id = $product->id;
+        $membership->start_date = now();
+        $membership->end_date = now()->addDays($product->duration_days);
+        $membership->downloads_today = 0;
+        $membership->last_download_reset = now();
+        $membership->status = 'pending'; // Admin can later approve
+        $membership->save();
+        // Notify user about the membership purchase
+
+        $adminNotification = new AdminNotification();
+        $adminNotification->user_id = $user->id;
+        $adminNotification->title = 'Order place from ' . $user->fullname;
+        $adminNotification->click_url = urlPath('admin.memberships.index');
+        $adminNotification->save();
+
+        notify($user,'ORDER PLACE', [
+            'order_number' => $membership->id,
+            'amount' => showAmount($product->price),
+            'trx' => $user->trx,
+            'post_balance' => showAmount($user->balance)
+        ]);
+
+        // Redirect to dashboard or membership page        
+        $notify[] = ['success', 'Membership purchased. Awaiting admin approval'];
+        return back()->withNotify($notify);
+        // Optionally, you can send an email or notification to the user
+        //Notify::send($user, new MembershipPurchased($membership));       
+
+    }
 }

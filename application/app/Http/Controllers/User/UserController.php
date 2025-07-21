@@ -261,6 +261,24 @@ class UserController extends Controller
                 return back()->withNotify($notify);
             }
         }
+        $membership = $user->activeMembership();   
+        
+        if ($membership) {
+            
+            if ($membership->last_download_reset->diffInHours(now()) >= 24) {
+                $membership->downloads_today = 0;
+                $membership->last_download_reset = now();
+                $membership->save();
+            }
+
+            if ($membership->downloads_today < $membership->plan->daily_download_limit) {
+                // Allow download
+                $membership->downloads_today += 1;
+                $membership->save();
+            } else {
+                return back()->withErrors(['You reached your daily download limit.']);
+            }
+        } 
 
         if (isset($product->file)) {
             $file = getFilePath('productFile') . '/' . $product->file;
@@ -268,6 +286,55 @@ class UserController extends Controller
 
             $order->downlaoad_count += 1;
             $order->save();
+
+            return response()->download($file, $fileName);
+        } else {
+            $notify = ['error', 'This File Empty'];
+            return back()->withNotify($notify);
+        }
+
+    }
+
+
+    // file download preminum product
+    
+    public function productpreminumFileDownload($id)
+    {
+
+        $user = auth()->user();
+        $siteName = gs()->site_name;
+        $product = Product::findOrFail($id);        
+
+
+        if ($product->is_free == 1) {
+            //if ($order->downlaoad_count > 10) {
+                $notify[] = ['error', 'Your download limit is over'];
+                return back()->withNotify($notify);
+           // }
+        }
+        $membership = $user->activeMembership();  
+              
+        if ($membership) {            
+            if ($membership->last_download_reset->diffInHours(now()) >= 24) {
+                $membership->downloads_today = 0;
+                $membership->last_download_reset = now();
+                
+                $membership->save();
+            }
+            if ($membership->downloads_today < $membership->plan->daily_download_limit) {
+                // Allow download
+               
+                $membership->downloads_today += 1;
+                $membership->save();
+            } else {
+                return back()->withErrors(['You reached your daily download limit.']);
+            }
+        } 
+        
+        if (isset($product->file)) {
+            $file = getFilePath('productFile') . '/' . $product->file;
+            $fileName = $siteName . '_' . $user->username . '_' . $product->file;
+           
 
             return response()->download($file, $fileName);
         } else {

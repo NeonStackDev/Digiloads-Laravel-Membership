@@ -66,7 +66,8 @@ Route::middleware('auth')->name('user.')->group(function () {
 
                 // file download
                 Route::get('product/order/{id}/{orderId}', 'productFileDownload')->name('product.file.download');
-
+                // preminum product file download
+                Route::get('product/preminum/download/{id}', 'productpreminumFileDownload')->name('product.preminum.download');
 
             });
 
@@ -80,7 +81,7 @@ Route::middleware('auth')->name('user.')->group(function () {
                 Route::post('profile', 'imageUpdate')->name('profile.update');
             });
 
-
+            
             //Product
             Route::controller('ProductController')->name('product.')->prefix('products')->group(function () {
 
@@ -115,6 +116,7 @@ Route::middleware('auth')->name('user.')->group(function () {
             Route::get('deposit/confirm', 'depositConfirm')->name('deposit.confirm');
             Route::get('deposit/manual', 'manualDepositConfirm')->name('deposit.manual.confirm');
             Route::post('deposit/manual', 'manualDepositUpdate')->name('deposit.manual.update');
+            Route::post('pricing/pay', 'membershipPayment')->name('pricing.pay');
         });
     });
 });

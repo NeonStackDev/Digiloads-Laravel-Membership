@@ -41,6 +41,14 @@
                     </a>
                 </li>
 
+                <li class="sidebar__menu-header">@lang('Membership Management')</li>
+                <li class="sidebar-menu-item {{menuActive('admin.membershp*')}}">
+                    <a href="{{route('admin.memberships.manage')}}" class="nav-link ">
+                        <i class="las la-align-left menu-icon"></i>
+                        <span class="menu-title">@lang('Membership')</span>
+                    </a>
+                </li>
+
                 <li class="sidebar__menu-header">@lang('Products')</li>
 
                 <li class="sidebar-menu-item sidebar-dropdown">

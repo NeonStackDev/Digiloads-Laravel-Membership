@@ -68,16 +68,16 @@ Route::middleware('admin')->group(function () {
         Route::get('notification/log/{id}', 'notificationLog')->name('notification.log');
     });
 
-      // category
-      Route::controller('CategoryController')->name('category.')->prefix('category')->group(function () {
+    // category
+    Route::controller('CategoryController')->name('category.')->prefix('category')->group(function () {
 
         Route::get('/', 'index')->name('index');
         Route::post('store', 'store')->name('store');
         Route::post('update', 'update')->name('update');
     });
 
-     // product
-     Route::controller('ProductController')->name('product.')->prefix('products')->group(function () {
+    // product
+    Route::controller('ProductController')->name('product.')->prefix('products')->group(function () {
 
         Route::get('/', 'index')->name('index');
         Route::get('create', 'create')->name('create');
@@ -98,12 +98,12 @@ Route::middleware('admin')->group(function () {
     });
 
 
-     //Orders
+    //Orders
      Route::name('orders.')->controller('OrderController')->prefix('orders')->group(function(){
         Route::get('orders','index')->name('index');
         Route::get('order/detail/{id}','orderDetail')->name('details');
 
-     });
+    });
 
 
     // Subscriber
@@ -114,6 +114,23 @@ Route::middleware('admin')->group(function () {
         Route::post('subscriber/send/email', 'sendEmail')->name('subscriber.send.email');
     });
 
+    //AdminMembership
+    Route::controller('AdminMembershipController')->prefix('memberships')->group(function () {
+        // View all membership orders
+        Route::get('/', 'index')->name('memberships.index');
+
+        // Approve a membership
+        Route::post('/memberships/{id}/approve', 'approve')->name('memberships.approve');
+
+        // Reject a membership
+        Route::post('/memberships/{id}/reject','reject')->name('memberships.reject');
+
+        // Manage memberships
+        Route::get('/manage', 'manage')->name('memberships.manage');
+        Route::post('store', 'store')->name('memberships.store');
+        Route::post('update', 'update')->name('memberships.update');
+
+    });
 
     // Deposit Gateway
     Route::name('gateway.')->prefix('payment/gateways')->group(function(){

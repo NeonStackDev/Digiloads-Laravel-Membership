@@ -16,6 +16,8 @@ use Illuminate\Http\Request;
 use App\Models\SupportTicket;
 use App\Models\SupportMessage;
 use App\Models\AdminNotification;
+use App\Models\MembershipPlan;
+use App\Models\UserMembership;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Validator;
@@ -197,7 +199,36 @@ class SiteController extends Controller
             ->latest()
             ->paginate(getPaginate());
         $categories = Category::where('status', 1)->get();
-        return view($this->activeTemplate . 'shop.shop', compact('products', 'pageTitle', 'categories'));
+        $membership = null;
+        if (auth()->check()) {
+            $user = auth()->user();
+            $membership = $user->activeMembership(); 
+        }
+        return view($this->activeTemplate . 'shop.shop', compact('products', 'pageTitle', 'categories','membership'));
+    }
+
+    //membership pricing
+    public function pricing()
+    {
+        $pageTitle = 'Pricing';
+        $membership = null;
+        if (auth()->check()) {
+            $user = auth()->user();
+            $membership = $user->activeMembership(); 
+        }
+        $plans = MembershipPlan::all();
+        return view($this->activeTemplate . 'pricing', compact('plans', 'pageTitle','membership'));
+    }
+
+    public function checkout($id)
+    {
+        if (!auth()->check()) {
+            $notify[] = ['error', 'Please login to continue'];
+            return redirect()->route('user.login')->withNotify($notify);
+        }
+        $plan = MembershipPlan::findOrFail($id);
+        $pageTitle = 'Checkout';
+        return view($this->activeTemplate.'checkout',compact('plan','pageTitle'));
     }
 
     // product details
@@ -280,7 +311,12 @@ class SiteController extends Controller
             ->paginate(getPaginate());
         $sections = Page::where('tempname', $this->activeTemplate)->where('slug', 'browse')->firstOrFail();
         $categories = Category::where('status', 1)->latest()->paginate(getPaginate());
-        return view($this->activeTemplate . 'shop.shop', compact('sections', 'products', 'pageTitle', 'categories'));
+        $membership = null;
+        if (auth()->check()) {
+            $user = auth()->user();
+            $membership = $user->activeMembership(); 
+        }
+        return view($this->activeTemplate . 'shop.shop', compact('sections', 'products', 'pageTitle', 'categories','membership'));
 
     }
 

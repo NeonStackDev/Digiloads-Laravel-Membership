@@ -99,4 +99,17 @@ class User extends Authenticatable
         return $this->where('balance','>', 0);
     }
 
+    public function activeMembership()
+    {
+        return $this->memberships()
+            ->where('status', 'active')
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->first();
+    }  
+      
+    public function memberships()
+    {
+        return $this->hasMany(UserMembership::class);
+    }
 }

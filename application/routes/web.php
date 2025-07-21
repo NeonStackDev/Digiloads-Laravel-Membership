@@ -43,11 +43,11 @@ Route::controller('SiteController')->group(function () {
     // shop page
     Route::get('/browse','browse')->name('browse');
     Route::get('product/{slug}/{id}', 'productDetails')->name('product.details');
-
-
+    
+    
     // product filtered
     Route::get('product/filtred', 'productFilter')->name('product.filtered');
-
+    
     //  search product
     Route::get('/product/search', 'productSearch')->name('product.search');
     // filter category
@@ -55,11 +55,18 @@ Route::controller('SiteController')->group(function () {
     // vendor page
     Route::get('/vendor-page/{slug}/{id}', 'vendorPage')->name('vendor.page');
     Route::get('/vendor-product/search/{id}', 'vendorProductSearch')->name('vendor.product.search');
+    
+    // pricing page
+    Route::get('/pricing', 'pricing')->name('pricing');
+    Route::get('/pricing/checkout/{id}', 'checkout')->name('pricing.checkout');
+    
 
-
-
+    // pages
     Route::get('/{slug}', 'pages')->name('pages');
     Route::get('/', 'index')->name('home');
 });
+
+
+
 
 

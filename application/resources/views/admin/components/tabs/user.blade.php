@@ -40,6 +40,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link {{ Request::routeIs('admin.memberships.index') ? 'active' : '' }}"
+                    href="{{route('admin.memberships.index')}}">@lang('All Memberships')
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link {{ Request::routeIs('admin.subscriber.index') ? 'active' : '' }}"
                     href="{{route('admin.subscriber.index')}}">@lang('Subscribers')
                 </a>
